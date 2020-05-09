@@ -37,7 +37,7 @@ const main = async() => {
         let addUserDoc = await User.create(aNewUser);
         let addProviderDoc = await Provider.create(aNewProvider);
 
-        let updateUserProviderInfo = await User.linkUserProvider(addUserDoc,addProviderDoc);
+        let updateUserProviderInfo = await User.linkUserProvider(addUserDoc,[addProviderDoc]);
 
 
         /*

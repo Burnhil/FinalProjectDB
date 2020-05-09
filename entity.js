@@ -78,6 +78,7 @@ export default class Entity {
 
         for(let i = 0; i < theProviderInfo.length; i++){
             providerIds.push(theProviderInfo[i].id);
+            console.log("looping?");
         }        
         userId = theUserInfo.id;
 
@@ -97,14 +98,14 @@ export default class Entity {
             updatedProviderDoc.push(theProviderInfo[i].save());
         }
 
-        console.log("We are getting to this line of code yeah!!!");
-        let howLong = providerIds.length;
-        console.log(howLong);
+        console.log(updatedUserProviderDoc.id);
+        console.log(updatedProviderDoc[0].id);
+        console.log(updatedProviderDoc.length);
 
-        if(updatedUserProviderDoc.id && updatedProviderDoc.id){ 
+        if(updatedUserProviderDoc.id && updatedProviderDoc.length > 0){ 
             console.log(`User ${updatedUserProviderDoc.id} has been added to the following providers`);
-            for(let i =0; i < providerIds.length; i++){
-                console.log(`providers ${providerIds[i].id}`);
+            for(let i =0; i < theProviderInfo.length; i++){
+                console.log(`providers ${updatedProviderDoc[i].id}`);
             }
 
         }
