@@ -13,7 +13,8 @@ export default class ServicesOffered extends Entity {
         ServiceType: { type: "String", required: true},
         ServicesDescription: { type: "String", required: true},
         CriteriaForService: { type: "String", required: true},
-        WarmingStation: { type: "String", required: true}
+        WarmingStation: { type: "String", required: true},
+        ProviderID: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider"}]
     
     });
 

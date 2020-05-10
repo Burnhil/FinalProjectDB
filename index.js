@@ -1,10 +1,11 @@
 // bring in the MongoDB Connection import
 import './dbconnection.js'; // Since we don't need to refer back to this particular import, there's no need for a name or the "from" keyword
 // Import the entity to test
-import User from './administration.js';
+import User from './user.js';
 import Provider from './provider.js';
 import ServicesOffered from './servicesoffered.js';
 import BedTransaction from './bedtransaction.js';
+import ProviderOrganization from './providerorganization.js';
 
 const main = async() => {
 
@@ -32,12 +33,33 @@ const main = async() => {
         County: "Potter"
     }
 
+    let aNewSericesOffered = {
+        AvaliableBeds: 47,
+        TotalBeds: 87,
+        VolunteerOpportunities: 5,
+        VolunteersNeeded: 3,
+        ServiceType: "something awesome goes here",
+        ServicesDescription: "lets help people",
+        CriteriaForService: "shirt shoes sox",
+        WarmingStation: "no"
+
+    }
+
+    let aNewProOr = {
+    
+        ProviderId: "5eb85918ed99bd73e4b97935",
+        UserId: "5eb85918ed99bd73e4b97934"
+          
+    }
+
     try {
 
-        let addUserDoc = await User.create(aNewUser);
+        //let addUserDoc = await User.create(aNewUser);
         let addProviderDoc = await Provider.create(aNewProvider);
+        let addServicesOfferedDoc = await ServicesOffered.create(aNewSericesOffered);
 
-        let updateUserProviderInfo = await User.linkUserProvider(addUserDoc,[addProviderDoc]);
+        let proservDoc = await Provider.linkProviderServicesOffered(addProviderDoc,addServicesOfferedDoc);
+        
 
 
         /*
