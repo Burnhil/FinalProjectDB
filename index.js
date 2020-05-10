@@ -10,24 +10,24 @@ import ProviderOrganization from './providerorganization.js';
 const main = async() => {
 
     let aNewUser = {
-        FirstName: 'Mike',
-        LastName: 'Sanders',
-        Oraganization: 'Bed and Blankets',  
-        PhoneNumber: '806-214-9852',        
-        Email: 'something@gmail.com',       
+        FirstName: 'Elisha',
+        LastName: 'Watt',
+        Oraganization: 'Sleep on the Floor',  
+        PhoneNumber: '806-258-9874',        
+        Email: 'sleepytime@gmail.com',       
         UserType: 'Provider',
         UserPassword: '***********',        
         LastLogin: "02/02/2020",
-        Diabled: true 
+        Diabled: false 
     }
     
     let aNewProvider = {
   
-        OrganizationName: "Happy Times",
-        Email: "wellhome@yahoo.com",
-        WebsiteInfo: "safeharbor.com",
-        PhoneNumber: "806-258-9632",
-        Address: "2547 Maple",
+        OrganizationName: "Sleep Anywhere",
+        Email: "sleepAnywhere@yahoo.com",
+        WebsiteInfo: "sleepanywhere.com",
+        PhoneNumber: "806-258-2587",
+        Address: "1800 no where drive",
         City: "Amarillo",
         State: "Texas",
         County: "Potter"
@@ -54,11 +54,13 @@ const main = async() => {
 
     try {
 
-        //let addUserDoc = await User.create(aNewUser);
+        let addUserDoc = await User.create(aNewUser);
         let addProviderDoc = await Provider.create(aNewProvider);
-        let addServicesOfferedDoc = await ServicesOffered.create(aNewSericesOffered);
 
-        let proservDoc = await Provider.linkProviderServicesOffered(addProviderDoc,addServicesOfferedDoc);
+        let updatedProviderUser = await Provider.linkProviderUser(addProviderDoc, [addUserDoc]);
+        //let addServicesOfferedDoc = await ServicesOffered.create(aNewSericesOffered);
+
+        //let proservDoc = await Provider.linkProviderServicesOffered(addProviderDoc,addServicesOfferedDoc);
         
 
 

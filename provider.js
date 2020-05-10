@@ -34,49 +34,57 @@ export default class Provider extends Entity {
         providerId = providerInfo.id;
         servicesOfferedId = servicesOfferedInfo.id;
 
+        //add entities
         providerInfo.TheServicesOfferedId = servicesOfferedId;
         servicesOfferedInfo.ProviderID = providerId;
 
+        //save to entities table
         let updatedProviderDoc = await providerInfo.save();
         let updatedServicesOfferedDoc = await servicesOfferedInfo.save();
 
+        //print console verification of completion
         if(updatedProviderDoc && updatedServicesOfferedDoc){
             console.log(`The services offered id = ${updatedServicesOfferedDoc} has been added to the following Provider ${updatedProviderDoc}`);
         }
 
-        /*
-        for(let i = 0; i < theProviderInfo.length; i++){
-            providerIds.push(theProviderInfo[i].id);
-        }        
-        userId = theUserInfo.id;
-
-        //add
-        theUserInfo.ProviderID = providerIds;
-        for(let i =0; i < providerIds.length; i++){
-            theProviderInfo[i].TheUserId.push(userId);
-        }
-
-        //save
-        let updatedUserProviderDoc = await theUserInfo.save();
-        let updatedProviderDoc = [];
-        for(let i = 0; i < providerIds.length; i++){
-            updatedProviderDoc.push(await theProviderInfo[i].save());
-        }
-
-        //print info out to console to verify
-        if(updatedUserProviderDoc.id && updatedProviderDoc.length > 0){ 
-            console.log(`User ${updatedUserProviderDoc.id} has been added to the following providers`);
-            for(let i =0; i < theProviderInfo.length; i++){
-                console.log(`providers ${updatedProviderDoc[i].id}`);
-            }
-
-        } 
-
-        */
     }catch(err){
             console.log(err);
         }
 
     }
+
+    static async linkProviderUser(theProviderInfo, theUserInfo){
+        //get info
+        let userIds = [];
+        let providerId = "";
+        
+        for(let i = 0; i < theUserInfo.length; i++){
+            userIds.push(theUserInfo[i].id);
+        }
+        providerId = theProviderInfo.id;
+
+        //add entity info
+        theProviderInfo.TheUserId = userIds;
+        for(let i =0; i < userIds.length; i++){
+            theUserInfo[i].ProviderID.push(providerId);
+        }
+
+        //save entity info
+        let updatedProviderUserDoc = await theProviderInfo.save();
+        let updatedUserIdDoc = [];
+        for(let i =0; i < userIds.length; i++){
+            updatedUserIdDoc.push(await theUserInfo[i].save());
+        }
+
+        if(updatedProviderUserDoc.id && updatedUserIdDoc.length > 0){
+            console.log(`Provider ${updatedProviderUserDoc.id} has been added to the following users`);
+            for(let i = 0; i < theUserInfo.length; i++){
+                console.log(`users ${updatedUserIdDoc[i]}.id`);
+            }
+        }
+
+    }
+
+
 
 }
