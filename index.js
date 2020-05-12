@@ -24,7 +24,7 @@ const main = async() => {
         Diabled: false 
     }
 
-    let userPassword = "april";
+    let userPassword = "1234Fun";
     
     let aNewProvider = {
   
@@ -59,16 +59,25 @@ const main = async() => {
 
     try {
 
+
+
+        aNewUser.UserPassword = "WOW";
+        console.log(" before hash = "+ aNewUser.UserPassword);
+
+        //let tryingToHash = aNewUser.UserPassword;
+        let tryingToHash = await User.newUserPasswordHash(aNewUser.UserPassword);
+        console.log(" after hash = " + tryingToHash);
+
         // //test code for bcrypt
-         let saltRounds = 10;
-         let tempPass = "5821487";
-        let tempPass2 = "111111111";
+        //  let saltRounds = 10;
+        //  let tempPass = "5821487";
+        // let tempPass2 = "111111111";
         
 
-        bcrypt.hash(tempPass, saltRounds).then(function(hash) {
+        // bcrypt.hash(tempPass, saltRounds).then(function(hash) {
 
-        console.log(`temp pass is now stored as hashTemp ${hash}`);
-        });
+        // console.log(`temp pass is now stored as hashTemp ${hash}`);
+    // });
         //     let hashTempPass = hash;
 
 
@@ -90,11 +99,11 @@ const main = async() => {
         // });
 
 
-        //let addUserDoc = await User.create(aNewUser);
+        let addUserDoc = await User.create(aNewUser);
         //let addProviderDoc = await Provider.create(aNewProvider);
 
         //console.log(addUserDoc);
-        //let checkPassword = await User.verifyLogin(addUserDoc, userPassword);
+        let checkPassword = await User.verifyLogin(addUserDoc, userPassword);
 
         //let updatedProviderUser = await Provider.linkProviderUser(addProviderDoc, [addUserDoc]);
         //let addServicesOfferedDoc = await ServicesOffered.create(aNewSericesOffered);

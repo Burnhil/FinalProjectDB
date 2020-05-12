@@ -78,10 +78,11 @@ export default class User extends Entity {
         //****************************************************************************************** 
         let userInDB = await this.read({ UserId: matchUser });
         console.log({message: "This is the user filtered from database", userInDB});
-        let theUserPassDoc = userInDB.UserPassword;
+        let theUserPassDoc = userInDB[0].UserPassword;
         console.log({message: "This is the user passwrod from database pulled", theUserPassDoc});
-/*
-        let match = await bcrypt.compare(userInDB.UserPassword, theUserPassword);
+        console.log("imputed user password = " + theUserPassword);
+
+        let match = await bcrypt.compare(theUserPassDoc, theUserPassword);
 
         //if user in db pull password to check
         if(match){
@@ -97,7 +98,7 @@ export default class User extends Entity {
         }else{
             console.log("Unable to find user");
         } 
-*/
+
     }
 
     //untested until I can figure out await object?????????????????????????
@@ -146,4 +147,14 @@ export default class User extends Entity {
             disableUpdate = await theUserToDisable.Diabled.save();
         }
     }
+
+
+    static async newUserPasswordHash(newUserPasswordToStore){
+        const saltRounds = 10;
+        bcrypt.hash(newUserPasswordToStore, saltRounds).then(function(hash) {
+            // Store hash in your password DB.
+            return hash;
+        });
+    }
+
 }
