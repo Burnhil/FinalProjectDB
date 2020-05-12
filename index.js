@@ -60,13 +60,15 @@ const main = async() => {
     try {
 
         // //test code for bcrypt
-        // let saltRounds = 10;
-        // let tempPass = "5821487";
-        // let tempPass2 = "111111111";
+         let saltRounds = 10;
+         let tempPass = "5821487";
+        let tempPass2 = "111111111";
         
 
-        // bcrypt.hash(tempPass, saltRounds).then(function(hash) {
-        //     console.log(`temp pass is now stored as hashTemp ${hash}`);
+        bcrypt.hash(tempPass, saltRounds).then(function(hash) {
+
+        console.log(`temp pass is now stored as hashTemp ${hash}`);
+        });
         //     let hashTempPass = hash;
 
 
@@ -80,7 +82,7 @@ const main = async() => {
         //         }
              
          
-        //     }
+        //    }
 
         //     let yes = 12;
         //     let no = 11;
@@ -88,11 +90,11 @@ const main = async() => {
         // });
 
 
-        let addUserDoc = await User.create(aNewUser);
+        //let addUserDoc = await User.create(aNewUser);
         //let addProviderDoc = await Provider.create(aNewProvider);
 
         //console.log(addUserDoc);
-        let checkPassword = await User.verifyLogin(addUserDoc, userPassword);
+        //let checkPassword = await User.verifyLogin(addUserDoc, userPassword);
 
         //let updatedProviderUser = await Provider.linkProviderUser(addProviderDoc, [addUserDoc]);
         //let addServicesOfferedDoc = await ServicesOffered.create(aNewSericesOffered);
