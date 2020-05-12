@@ -11,7 +11,9 @@ export default class BedTransaction extends Entity {
         DateTime: { type: "String", required: true},
         UpdatingUserID: { type: "String", required: true},
         UpdatingProviderID: { type: "String", required: true},
-        UpdatingServiceID: { type: "String", required: true}
+        UpdatingServiceID: { type: "String", required: true},
+        changedBy: { type: "String", default: "The Admin" },
+        changedDateTime: { type: "Date", default: new Date() }
     
     });
 

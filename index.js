@@ -6,6 +6,8 @@ import Provider from './provider.js';
 import ServicesOffered from './servicesoffered.js';
 import BedTransaction from './bedtransaction.js';
 import ProviderOrganization from './providerorganization.js';
+import mongoose from "mongoose";
+import bcrypt from "bcrypt";
 
 const main = async() => {
 
@@ -16,10 +18,13 @@ const main = async() => {
         PhoneNumber: '806-258-9874',        
         Email: 'sleepytime@gmail.com',       
         UserType: 'Provider',
-        UserPassword: '***********',        
+        UserId: 'eewatt',
+        UserPassword: '1234Fun',        
         LastLogin: "02/02/2020",
         Diabled: false 
     }
+
+    let userPassword = "april";
     
     let aNewProvider = {
   
@@ -54,10 +59,42 @@ const main = async() => {
 
     try {
 
-        let addUserDoc = await User.create(aNewUser);
-        let addProviderDoc = await Provider.create(aNewProvider);
+        // //test code for bcrypt
+        // let saltRounds = 10;
+        // let tempPass = "5821487";
+        // let tempPass2 = "111111111";
+        
 
-        let updatedProviderUser = await Provider.linkProviderUser(addProviderDoc, [addUserDoc]);
+        // bcrypt.hash(tempPass, saltRounds).then(function(hash) {
+        //     console.log(`temp pass is now stored as hashTemp ${hash}`);
+        //     let hashTempPass = hash;
+
+
+        //     async function checkUser(username, password) {
+                
+             
+        //         const match = await bcrypt.compare(tempPass, hashTempPass);
+        //         console.log(match);
+        //         if(match) {
+        //             console.log("Yes they do!");
+        //         }
+             
+         
+        //     }
+
+        //     let yes = 12;
+        //     let no = 11;
+        //     checkUser(yes,no);
+        // });
+
+
+        let addUserDoc = await User.create(aNewUser);
+        //let addProviderDoc = await Provider.create(aNewProvider);
+
+        //console.log(addUserDoc);
+        let checkPassword = await User.verifyLogin(addUserDoc, userPassword);
+
+        //let updatedProviderUser = await Provider.linkProviderUser(addProviderDoc, [addUserDoc]);
         //let addServicesOfferedDoc = await ServicesOffered.create(aNewSericesOffered);
 
         //let proservDoc = await Provider.linkProviderServicesOffered(addProviderDoc,addServicesOfferedDoc);

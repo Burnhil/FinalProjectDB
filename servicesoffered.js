@@ -14,6 +14,8 @@ export default class ServicesOffered extends Entity {
         ServicesDescription: { type: "String", required: true},
         CriteriaForService: { type: "String", required: true},
         WarmingStation: { type: "String", required: true},
+        changedBy: { type: "String", default: "The Admin" },
+        changedDateTime: { type: "Date", default: new Date() },
         ProviderID: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider"}]
     
     });
