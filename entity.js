@@ -1,5 +1,4 @@
 export default class Entity {
-    // This Entity class will serve as the parent class for all model-like children classes (in this case, Person).
 
     // define the 4 CRUD functions as statically available properties
     // Deifne a create function
@@ -22,7 +21,7 @@ export default class Entity {
     // Define read
     static async read(filter, relationshipsToPopulate) {
         // filter is a json object to actually filter model.find()
-        // relationshipsToPopulate is an array of the names of teh properties that contain teh linking relationships for this model.
+        // relationshipsToPopulate is an array of the names of the properties that contain the linking relationships for this model.
         try {
                 let query = null;   // this will hold the Query object returned from find()
                 // Handle the situation where filter is available.

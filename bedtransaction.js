@@ -3,16 +3,14 @@ import mongoose from "mongoose";
 import Entity from "./entity.js";
 
 export default class BedTransaction extends Entity {
-    // define 2 static properties pertaining to the schema and model of this entity type.
+    // define static properties pertaining to the schema and model of this entity type.
     static schema = new mongoose.Schema({
 
         CurrentBedCount: { type: "Number", required: true},
         UpdatedBedCount: { type: "Number", required: true},
-        DateTime: { type: "String", required: true},
         UpdatingUserID: { type: "String", required: true},
         UpdatingProviderID: { type: "String", required: true},
         UpdatingServiceID: { type: "String", required: true},
-        changedBy: { type: "String", default: "The Admin" },
         changedDateTime: { type: "Date", default: new Date() }
     
     });
@@ -21,7 +19,37 @@ export default class BedTransaction extends Entity {
     //static model = mongoose.model("User", User.schema, "Administration"); // "namd of model", schemaObject, "name of collection in DB"
     static model = mongoose.model("BedTransaction", BedTransaction.schema, "BedTransaction");
 
-    static async updateBedCountTable(updateUserId, updateProviderId, UpdatedServiceOfferedId, updatedObject) {
-        //?????????????????????????????????????????????
+    static async updateBedCountTable(User, Provider, ServiceOffered, BedCount) {
+        //set current date/time to variable to store as reference
+        let currentDate = Date();
+        //set up json object to pass into insertion into database
+        let theProperties = {
+
+            CurrentBedCount: ServiceOffered.AvaliableBeds,
+            UpdatedBedCount: BedCount,
+            UpdatingUserID: User._id,
+            UpdatingProviderID: Provider._id,
+            UpdatingServiceID: ServiceOffered._id,
+            changedDateTime: currentDate,
+        }
+
+        try {
+            //update the bed count and store in database
+            ServiceOffered.AvaliableBeds = BedCount;
+            let updateServiceOfferedBedCount = await ServiceOffered.save();
+            //console.log(updateServiceOfferedBedCount);
+
+            // instantiate a new model of whatever the child class is representing
+            let newModel = new this.model();
+            // Get all of the properties in theProperties parameter and assign them to the new model object.
+            for(let [key, value] of Object.entries(theProperties)) {
+                newModel[key] = value;
+            }
+            // Now save the Mongoose model.
+            return newModel.save();
+        } catch (err) {
+            console.log(err);
+        }
     }
+   
 }

@@ -1,7 +1,7 @@
 // Represent a Person entity.
 import mongoose from "mongoose";
 import Entity from "./entity.js";
-import ProviderOrganization from "./providerorganization.js";
+import ProviderOrganization from "./provideruser.js";
 import bcrypt from "bcrypt";
 
 export default class User extends Entity {
@@ -16,8 +16,9 @@ export default class User extends Entity {
         UserType: { type: "String", required: true},
         UserId: { type: "String", required: true},
         UserPassword: { type: "String", required: true},
+        salt: {type: "String"},
         LastLogin: { type: Date, required: true},
-        Diabled: { type: Boolean, required: true},
+        Disabled: { type: Boolean, required: true},
         changedBy: { type: "String", default: "The Admin" },
         changedDateTime: { type: "Date", default: new Date() },
         ProviderID: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider"}]
@@ -31,6 +32,7 @@ export default class User extends Entity {
     static async linkUserProvider(theUserInfo, theProviderInfo){
         //************************************************************************************
         try{
+            
 
         //get info
         let providerIds = [];
@@ -39,7 +41,8 @@ export default class User extends Entity {
         for(let i = 0; i < theProviderInfo.length; i++){
             providerIds.push(theProviderInfo[i].id);
         }        
-        userId = theUserInfo.id;
+        userId = theUserInfo._id;
+    
 
         //add
         theUserInfo.ProviderID = providerIds;
@@ -56,6 +59,7 @@ export default class User extends Entity {
 
         //print info out to console to verify
         if(updatedUserProviderDoc.id && updatedProviderDoc.length > 0){ 
+   
             console.log(`User ${updatedUserProviderDoc.id} has been added to the following providers`);
             for(let i =0; i < theProviderInfo.length; i++){
                 console.log(`providers ${updatedProviderDoc[i].id}`);
@@ -68,93 +72,73 @@ export default class User extends Entity {
 
     }
 
-    static async verifyLogin(theUserID, theUserPassword){
+    // method to check UserId and Password match
+    static async authenticate(thePersonDoc, givenPassword) {
+        //pulling user password to compare
+        let encryptedPassword = thePersonDoc.UserPassword;
 
-        //verify user is in DB
-        let matchUser = theUserID.UserId;
-        //console.log(matchUser);
-        //console.log(UserPassword);
-
-        //****************************************************************************************** 
-        let userInDB = await this.read({ UserId: matchUser });
-        console.log({message: "This is the user filtered from database", userInDB});
-        let theUserPassDoc = userInDB[0].UserPassword;
-        console.log({message: "This is the user passwrod from database pulled", theUserPassDoc});
-        console.log("imputed user password = " + theUserPassword);
-
-        let match = await bcrypt.compare(theUserPassDoc, theUserPassword);
-
-        //if user in db pull password to check
-        if(match){
-            let theUserPassword = userName.UserPassword; 
-            console.log(" this is the password = " + theUserPassword  );
-
-            if(theUserPassword == theUserPassword){
-                //execute log in procedure
-            }else{
-                console.log("Sorry current user or password not found!");
-            }
-
-        }else{
-            console.log("Unable to find user");
-        } 
-
+        //compare UserId's password to inputed password return true or false
+        const match = await bcrypt.compare(givenPassword, encryptedPassword);
+        return match;   
     }
 
-    //untested until I can figure out await object?????????????????????????
-    static async updateUserPassword(theUserId, currentPassword, updatedPassword){
-        //check current password vs database
-       
-            //pull user password from DB
-            let userInDB = await this.read({ UserId: theUserId });
-            console.log({message: "This is the user filtered from database", userInDB});
-            //assign password from DB to variable for comaparison
-            let userPassword = userInDB.UserPassword;
-            //compare passwords
-            let match = await bcrypt.compare(currentPassword, userPassword);
-         
-            // if match convert new password to hash and store
-            if(match) {
-                bcrypt.hash(updatedPassword, saltRounds).then(function(hash) {
-                    theUserId.UserPassword = hash;
-                });
-            }else{
-                console.log("Current password does not match our records!");
-            }
-        
-    }
 
     //code to reset password using a temp password by admin/input using userid(theUserToReset) and to password(tempPassword)
-    static async resetPassword(theUserToRest, tempPassword){
-
+    static async resetPassword(theUserToReset, tempPassword){
+        let saltRounds = theUserToReset[0].salt;
+        console.log("saltrounds = " + saltRounds);
+        console.log("tempPassword = " + tempPassword);
         //create hash with bcrypt then store to user
-        bcrypt.hash(tempPassword, saltRounds).then(function(hash) {
-             let updatedPassword = hash;
-             updatedPassword =  theUserToRest.UserPassword.save();
-        });
+        
+             //hash password to be stored
+             let updatedPassword = await bcrypt.hash(tempPassword, saltRounds)
+             
+             //update password and store in database
+             theUserToReset[0].UserPassword = updatedPassword;
+             let updatedUserDoc = await theUserToReset[0].save();
+             return updatedUserDoc;
+     
     }
 
     //code to disable account per admin access
     static async disableAccount(theUserToDisable){
-        let userInDB = theUserToDisable.Diabled;
+        //set variables to be checked
+        let userInDB = theUserToDisable.Disabled;
+        let disableUpdate = false
+        console.log("before if statement = "+userInDB);
 
         //this can be used as a toggle to reactivate
-        if(!userInDB){
-            let disableUpdate = true;
-            disableUpdate = await theUserToDisable.Diabled.save();
-        }else{
-            let disableUpdate = false;
-            disableUpdate = await theUserToDisable.Diabled.save();
+        if(userInDB === true){
+            //set disable to false/store/save to database
+            disableUpdate = false;
+            console.log("after if true statement = "+disableUpdate);
+            theUserToDisable.Disabled = disableUpdate;
+            let updatedUserDoc = await theUserToDisable.save();
+            return updatedUserDoc;
         }
+
+        if(userInDB === false){
+            //set disable to true/store/save to database
+            disableUpdate = true;
+            console.log("after if false statement = "+disableUpdate);
+            theUserToDisable.Disabled = disableUpdate;
+            let updatedUserDoc = await theUserToDisable.save();
+            return updatedUserDoc;
+        }
+        //return value
+        return disableUpdate;
     }
 
-
+    //method used to create password hash to store into system.
+    //this method called for all new user creates before creation
     static async newUserPasswordHash(newUserPasswordToStore){
+        //generate salt for user
         const saltRounds = 10;
-        bcrypt.hash(newUserPasswordToStore, saltRounds).then(function(hash) {
-            // Store hash in your password DB.
-            return hash;
-        });
+        let salt = await bcrypt.genSalt(saltRounds);
+        //generate hash to be stored
+        let userHashPassword = await bcrypt.hash(newUserPasswordToStore, salt)  
+        //return both values to be added to new user create json 
+        return {userHashPassword, salt};  
     }
 
 }

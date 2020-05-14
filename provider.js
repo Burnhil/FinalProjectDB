@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import Entity from "./entity.js";
 
 export default class Provider extends Entity {
-    // define 2 static properties pertaining to the schema and model of this entity type.
+    // define static properties pertaining to the schema and model of this entity type.
     static schema = new mongoose.Schema({
 
         OrganizationName: { type: "String", required: true},
@@ -25,6 +25,7 @@ export default class Provider extends Entity {
     //static model = mongoose.model("User", User.schema, "Administration"); // "namd of model", schemaObject, "name of collection in DB"
     static model = mongoose.model("Provider", Provider.schema, "Provider");
 
+    //link provider to servicesoffered method
     static async linkProviderServicesOffered(providerInfo, servicesOfferedInfo){
     
         try{
@@ -55,6 +56,8 @@ export default class Provider extends Entity {
 
     }
 
+
+    //link provider to user 
     static async linkProviderUser(theProviderInfo, theUserInfo){
         //get info
         let userIds = [];
@@ -78,6 +81,7 @@ export default class Provider extends Entity {
             updatedUserIdDoc.push(await theUserInfo[i].save());
         }
 
+        //print console verification of completion
         if(updatedProviderUserDoc.id && updatedUserIdDoc.length > 0){
             console.log(`Provider ${updatedProviderUserDoc.id} has been added to the following users`);
             for(let i = 0; i < theUserInfo.length; i++){
