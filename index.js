@@ -1,5 +1,8 @@
 // bring in the MongoDB Connection import
 import './dbconnection.js'; // Since we don't need to refer back to this particular import, there's no need for a name or the "from" keyword
+//bring in passport.js so passport gets configured
+import './passport.js';
+
 // Import the entity to test
 import User from './user.js';
 import Provider from './provider.js';
@@ -8,6 +11,11 @@ import BedTransaction from './bedtransaction.js';
 import ProviderUser from './provideruser.js';
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+
+//bring in passport
+import passport from 'passport';
+//bring in JWTs
+import JWT from 'jsonwebtoken';
 
 // bring in Express and body-parser
 import express from 'express';
@@ -28,12 +36,18 @@ app.listen(port, () => {
 //***************************USER Code**************************************************************
 
 //Make endpoint that returns all users
-app.get("/users", async(req, res) =>{
+app.get("/users", passport.authenticate("jwt", { session: false}) ,async(req, res) =>{
 
     try{
-        //call function to read user database info
-        let allUserDocs = await User.read();
-        res.send(allUserDocs);
+
+        //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
+        if(req.user.UserType === "Admin"){
+            //call function to read user database info
+            let allUserDocs = await User.read();
+            res.send(allUserDocs);
+        }else{
+            res.send({message: "Unauthorized access please contact your Admin!"});
+        };
 
     }catch(err){
         //send error if unable to execute
@@ -43,8 +57,13 @@ app.get("/users", async(req, res) =>{
 })
 
 //get user by id
-app.get("/users/:userId", async(req, res) =>{
+app.get("/users/:userId",  passport.authenticate("jwt", { session: false}), async(req, res) =>{
+
     try{
+
+        //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
+        if(req.user.UserType === "Admin"){
+
         //get variable passed in
         let id = req.params.userId;
         //call read method with variable
@@ -53,6 +72,10 @@ app.get("/users/:userId", async(req, res) =>{
         //send back to request
         res.send(userDoc);
 
+        }else{
+            res.send({message: "Unauthorized access please contact your Admin!"});
+        };
+
     }catch(err){
         console.log(err);
         res.send(err);
@@ -60,44 +83,63 @@ app.get("/users/:userId", async(req, res) =>{
 });
 
 //make endpoint to create a User Doc
-app.post("/users", async(req, res) => {
+app.post("/users", passport.authenticate("jwt", { session: false}), async(req, res) => {
+
     try{ 
+        //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
+        if(req.user.UserType === "Admin"){
         //check to see if user info came through POST
         let todayDate = Date();
 
-    if( req.body.FirstName
-        && req.body.LastName
-        && req.body.Organization
-        && req.body.PhoneNumber
-        && req.body.Email
-        && req.body.UserType
-        && req.body.UserId
-        && req.body.UserPassword
-        ){
-            //get encrypted password and salt
-            console.log("WE are trying to salt");
-            let encryptedPasswordAndSalt = await User.newUserPasswordHash(req.body.UserPassword);
-            let encryptedPassword = encryptedPasswordAndSalt.encryptedString;
-            let salt = encryptedPasswordAndSalt.salt;
+            //set minimum requirements for password for length and characters used
+            let regex = "[*@!#%&,a-z,A-Z.1-9]{8,16}";
+            let pattern =  new RegExp(regex);
+            let testPattern = await pattern.test(req.body.UserPassword);
+            //if inputed password does not meet requirements let user know
+            if(!testPattern){
+                    res.send({message: "Password requirements include minimun length eight characters no longer then sixteen with one uppdercase letter(a-z), one number, and one special character(*@!#%&)"});
+            
+            }else{ 
+            
 
-            let newUserInfo = {
-                FirstName: req.body.FirstName,
-                LastName: req.body.LastName,
-                Organization: req.body.Organization,
-                PhoneNumber: req.body.PhoneNumber,
-                Email: req.body.Email,
-                UserType: req.body.UserType,
-                UserId: req.body.UserId,
-                UserPassword: encryptedPassword,
-                salt: salt,
-                LastLogin: todayDate,  //this date represents initial creation at this point
-                Disabled: false
-            }
+            if( req.body.FirstName
+                && req.body.LastName
+                && req.body.Organization
+                && req.body.PhoneNumber
+                && req.body.Email
+                && req.body.UserType
+                && req.body.UserId
+                && req.body.UserPassword
+                ){
+                    //get encrypted password and salt
+                    let encryptedPasswordAndSalt = await User.newUserPasswordHash(req.body.UserPassword);
+                    let encryptedPassword = encryptedPasswordAndSalt.encryptedString;
+                    let salt = encryptedPasswordAndSalt.salt;
 
-            //now we create user doc and store in database
-            let newUser = await User.create(newUserInfo);
-            res.send({message: "User created successfully", newUser});
+                    let newUserInfo = {
+                        FirstName: req.body.FirstName,
+                        LastName: req.body.LastName,
+                        Organization: req.body.Organization,
+                        PhoneNumber: req.body.PhoneNumber,
+                        Email: req.body.Email,
+                        UserType: req.body.UserType,
+                        UserId: req.body.UserId,
+                        UserPassword: encryptedPassword,
+                        salt: salt,
+                        LastLogin: todayDate,  //this date represents initial creation at this point
+                        Disabled: false
+                    }
 
+                    //now we create user doc and store in database
+                    let newUser = await User.create(newUserInfo);
+                    res.send({message: "User created successfully", newUser});
+
+                };
+
+           }
+
+        }else{
+            res.send({message: "Unauthorized access please contact your Admin!"});
         };
 
     }catch(err){
@@ -107,47 +149,55 @@ app.post("/users", async(req, res) => {
 });
 
 //make endpoint to update user
-app.put("/users/:userId", async(req, res) =>{
+app.put("/users/:userId", passport.authenticate("jwt", { session: false}), async(req, res) =>{
+    
     try{
-        //get the id to use
-        let id = req.params.userId;
-        //now find the user doc
-        let userDocs = await User.read({ _id: id });
-        let userDoc = userDocs[0];
 
-        if(userDoc){
+        //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
+        if(req.user.UserType === "Admin"){
+            //get the id to use
+            let id = req.params.userId;
+            //now find the user doc
+            let userDocs = await User.read({ _id: id });
+            let userDoc = userDocs[0];
 
-             //look at the Post req.body for the data used to update this user document
-            let updateInfo = {};
-            if(req.body.FirstName){
-                updateInfo["FirstName"] = req.body.FirstName;
-            }
-            if(req.body.LastName){
-                updateInfo["LastName"] = req.body.LastName;
-            }
-            if(req.body.Organization){
-                updateInfo["Organization"] = req.body.Organization;
-            }
-            if(req.body.PhoneNumber){
-                updateInfo["PhoneNumber"] = req.body.PhoneNumber;
-            }
-            if(req.body.Email){
-                updateInfo["Email"] = req.body.Email;
-            }
-            if(req.body.UserType){
-                updateInfo["UserType"] = req.body.UserType;
-            }
-            //add changedBy and changedDateTime to updateInfo
-            updateInfo["changedBy"] = "Admin" //*************update to user who is authenticate */
-            updateInfo["changedDateTime"] = Date();
+            if(userDoc){
 
-            //update database for user
-            let updatedUserDoc = await User.update(userDoc, updateInfo);
-            res.send({ message: "Update User doc a success.", updatedUserDoc});
+                //look at the Post req.body for the data used to update this user document
+                let updateInfo = {};
+                if(req.body.FirstName){
+                    updateInfo["FirstName"] = req.body.FirstName;
+                }
+                if(req.body.LastName){
+                    updateInfo["LastName"] = req.body.LastName;
+                }
+                if(req.body.Organization){
+                    updateInfo["Organization"] = req.body.Organization;
+                }
+                if(req.body.PhoneNumber){
+                    updateInfo["PhoneNumber"] = req.body.PhoneNumber;
+                }
+                if(req.body.Email){
+                    updateInfo["Email"] = req.body.Email;
+                }
+                if(req.body.UserType){
+                    updateInfo["UserType"] = req.body.UserType;
+                }
+                //add changedBy and changedDateTime to updateInfo
+                updateInfo["changedBy"] = "Admin" //*************update to user who is authenticate */
+                updateInfo["changedDateTime"] = Date();
+
+                //update database for user
+                let updatedUserDoc = await User.update(userDoc, updateInfo);
+                res.send({ message: "Update User doc a success.", updatedUserDoc});
+
+            }else{
+                res.send({ message: "Could not find user to be updated."});
+            };
 
         }else{
-            res.send({ message: "Could not find user to be updated."});
-        }
+            res.send({message: "Unauthorized access please contact your Admin!"});
+        };
 
     }catch(err){
         console.log(err);
@@ -156,24 +206,31 @@ app.put("/users/:userId", async(req, res) =>{
 });
 
 //make endpoint to delete one user by id
-app.delete("/users/:userId", async(req, res) => {
+app.delete("/users/:userId", passport.authenticate("jwt", { session: false}), async(req, res) => {
+
     try{
 
-        //get user id
-        let id = req.params.userId;
-        
-        //first find the one user doc
-        let userDocs = await User.read({ _id: id });
-        let userDoc = userDocs[0];
+        //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
+        if(req.user.UserType === "Admin"){
+            //get user id
+            let id = req.params.userId;
+            
+            //first find the one user doc
+            let userDocs = await User.read({ _id: id });
+            let userDoc = userDocs[0];
 
-        //verify we have both userId and userDoc 
-        if(id && userDoc){
-        //now delete the one doc
-        let deletedUserDoc = await User.delete(userDoc);
-        res.send({ message: "Delete was a success.", deletedUserDoc});
+            //verify we have both userId and userDoc 
+            if(id && userDoc){
+            //now delete the one doc
+            let deletedUserDoc = await User.delete(userDoc);
+            res.send({ message: "Delete was a success.", deletedUserDoc});
+            }else{
+                res.send({ message: "Could not find user"});
+            }
+
         }else{
-            res.send({ message: "Could not find user"});
-        }
+            res.send({message: "Unauthorized access please contact your Admin!"});
+        };
 
     }catch(err){
         console.log(err);
@@ -182,24 +239,33 @@ app.delete("/users/:userId", async(req, res) => {
 });
 
 //make endpoint to link user and provider by userId and JSON object conataining providerId
-app.put("/users/link/:userId", async(req, res) =>{
-    //get userId from url
-    let userId = req.params.userId;
-    //get providerId from JSON
-    let providerId = req.body._id;
-
-    //read user and provider from database
-    let userDoc = await User.read({ _id: userId });
-    let providerDoc = await Provider.read({ _id: providerId });
+app.put("/users/link/:userId", passport.authenticate("jwt", { session: false}), async(req, res) =>{
 
     try{
-        //if in database send update each with the other id
-        if(userId && providerId.length > 0){
-            let updateUserProvider = await User.linkUserProvider(userDoc[0],[providerDoc[0]]);
-            res.send({ message: "Updated user with provider info successful.", updateUserProvider});
+
+        //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
+        if(req.user.UserType === "Admin"){
+
+                    //get userId from url
+            let userId = req.params.userId;
+            //get providerId from JSON
+            let providerId = req.body._id;
+
+            //read user and provider from database
+            let userDoc = await User.read({ _id: userId });
+            let providerDoc = await Provider.read({ _id: providerId });
+
+            //if in database send update each with the other id
+            if(userId && providerId.length > 0){
+                let updateUserProvider = await User.linkUserProvider(userDoc[0],[providerDoc[0]]);
+                res.send({ message: "Updated user with provider info successful.", updateUserProvider});
+            }else{
+                res.send({ message: "Could not find user or provider info"});
+              }
         }else{
-            res.send({ message: "Could not find user or provider info"});
-        }
+            res.send({message: "Unauthorized access please contact your Admin!"});
+        };
+
     }catch(err){
         console.log(err);
         res.send(err);
@@ -207,23 +273,42 @@ app.put("/users/link/:userId", async(req, res) =>{
 });
 
 //make endpoint to reset password with userId and JSON object containing temporary password
-app.put("/users/resetpassword/:userId", async(req, res) => {
-    //get userId from url
-    let userId = req.params.userId;
-    //get tempory password
-    let tempPassword = req.body.UserPassword;
+app.put("/users/resetpassword/:userId", passport.authenticate("jwt", { session: false}), async(req, res) => {
 
     try{
-        //checking if userId and tempPassword is valid
-        if(userId && tempPassword){
-            //pull user from database and call method to reset password
-            let userInfo = await User.read({ _id: userId });
-            let resetPasswordDoc = await User.resetPassword(userInfo, tempPassword);
-            res.send({ message: "User password has been reset.", resetPasswordDoc});
 
+        //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
+        if(req.user.UserType === "Admin"){
+
+             //get userId from url
+            let userId = req.params.userId;
+            //get tempory password
+            let tempPassword = req.body.UserPassword;
+
+            //set minimum requirements for password for length and characters used
+            let regex = "[*@!#%&,a-z,A-Z.1-9]{8,16}";
+            let pattern =  new RegExp(regex);
+            let testPattern = await pattern.test(tempPassword);
+            //if inputed password does not meet requirements let user know
+            if(!testPattern){
+                    res.send({message: "Password requirements include minimun length eight characters no longer then sixteen with one uppdercase letter(a-z), one number, and one special character(*@!#%&)"});
+          
+            }else{
+
+                //checking if userId and tempPassword is valid
+                if(userId && tempPassword){
+                    //pull user from database and call method to reset password
+                    let userInfo = await User.read({ _id: userId });
+                    let resetPasswordDoc = await User.resetPassword(userInfo, tempPassword);
+                    res.send({ message: "User password has been reset.", resetPasswordDoc});
+
+                }else{
+                    res.send({ message: "Could not find user info"});
+                }
+            }
         }else{
-            res.send({ message: "Could not find user info"});
-        }
+            res.send({message: "Unauthorized access please contact your Admin!"});
+        };
 
     }catch(err){
         console.log(err);
@@ -232,26 +317,35 @@ app.put("/users/resetpassword/:userId", async(req, res) => {
 });
 
 //make endpoint to disable user account by userId.  This can also be used to reactivate a account.
-app.put("/users/disableuser/:userId", async(req, res) => {
-   
-    //pulling the vairable from the url for userId
-    let userId = req.params.userId;
+app.put("/users/disableuser/:userId", passport.authenticate("jwt", { session: false}), async(req, res) => {
     
     try{
-        //check if userId is valid
-        if(userId){
-            let disableUser = await User.read({ _id: userId });
-            let disableUserDoc = await User.disableAccount(disableUser[0]);
 
-            //This toggles to show the output if the account has been disabled(true) or reactivate(false)
-            if(disableUserDoc.Disabled){
-                res.send({ message: "This user account has been disabled.", disableUserDoc});
+        //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
+        if(req.user.UserType === "Admin"){
+
+            //pulling the vairable from the url for userId
+            let userId = req.params.userId;
+
+            //check if userId is valid
+            if(userId){
+                let disableUser = await User.read({ _id: userId });
+                let disableUserDoc = await User.disableAccount(disableUser[0]);
+
+                //This toggles to show the output if the account has been disabled(true) or reactivate(false)
+                if(disableUserDoc.Disabled){
+                    res.send({ message: "This user account has been disabled.", disableUserDoc});
+                }else{
+                    res.send({ message: "This user account has been reactivated.", disableUserDoc});
+                }
             }else{
-                res.send({ message: "This user account has been reactivated.", disableUserDoc});
+                res.send({ message: "Could not find user info"});
             }
+
         }else{
-            res.send({ message: "Could not find user info"});
-        }
+            res.send({message: "Unauthorized access please contact your Admin!"});
+        };    
+
     }catch(err){
         console.log(err);
         res.send(err);
@@ -645,11 +739,12 @@ app.post("/bedtransaction", async(req, res) => {
             let providerDoc = await Provider.read({ _id: theProvider});
             let servicesOfferedDoc = await ServicesOffered.read({ _id: theServicesOffered});
        
+            let theUserDoc = userDoc[0];
             console.log(userDoc[0]);
             console.log(providerDoc[0]);
             console.log(servicesOfferedDoc[0]);
             //now we create BedTransaction doc and store in database
-            let newBedTransaction = await ServicesOffered.create(userDoc[0], providerDoc[0], servicesOfferedDoc[0], req.body.UpdatedBedCount);
+            let newBedTransaction = await ServicesOffered.create(theUserDoc, providerDoc[0], servicesOfferedDoc[0], req.body.UpdatedBedCount);
             //res.send({message: "BedTransaction created successfully", newBedTransaction});
 
         };
@@ -752,3 +847,36 @@ app.post("/providerusers", async(req, res) =>{
         res.send(err);
     }
 });
+
+app.post("/users/authenticate", async(req, res) =>{
+    // take username and password out of the request body
+
+    //use regular expressions to sanitize the data before ****************************regurlar expressions**************
+    try {
+        if(req.body._id && req.body.UserPassword) {
+            //make Passport preform the authentication
+            //note since we are using JWT for authentication, we WILL NOT use serer-side sessions, so {session: false}
+            passport.authenticate("local", { session: false }, (err, user, info) => {
+                // check to see if authenticate() had any issues, so check err and user
+                if(err || !user){
+                    return res.status(400).json({
+                        message: "Something happend and authenciation was unseccessful",
+                        user: user
+                    });
+                }
+                //assuming no issues, go ahead and "login" the pesron via Passport
+                req.login(user, {session: false}, (err) => {
+                    if(err){
+                        res.send(err);
+                    }
+                    // if no error, generate the JWT to signify that the person logged in successfully
+                    const token = JWT.sign(user.toJSON(), "ThisNeedsToBeAStrongPasswordPleaseChange")
+                    return res.json({ user, token });
+                });
+            })(req, res);   //NOTE: we're passing req and res to the next middleware (just memorize this)
+        }
+    } catch (err) {
+        console.log(err);
+        res.send(err);
+    }
+})
