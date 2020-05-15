@@ -30,7 +30,7 @@ export default class BedTransaction extends Entity {
             UpdatingUserID: User._id,
             UpdatingProviderID: Provider._id,
             UpdatingServiceID: ServiceOffered._id,
-            changedDateTime: currentDate,
+            changedDateTime: currentDate
         }
 
         try {

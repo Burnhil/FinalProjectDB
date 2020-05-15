@@ -10,7 +10,7 @@ export default class User extends Entity {
 
         FirstName: { type: "String", required: true},
         LastName: { type: "String", required: true},
-        Oraganization: { type: "String", required: true},
+        Organization: { type: "String", required: true},
         PhoneNumber: { type: "String", required: true},
         Email: { type: "String", required: true},
         UserType: { type: "String", required: true},
@@ -64,7 +64,7 @@ export default class User extends Entity {
             for(let i =0; i < theProviderInfo.length; i++){
                 console.log(`providers ${updatedProviderDoc[i].id}`);
             }
-
+        
         } 
     }catch(err){
             console.log(err);
@@ -86,8 +86,6 @@ export default class User extends Entity {
     //code to reset password using a temp password by admin/input using userid(theUserToReset) and to password(tempPassword)
     static async resetPassword(theUserToReset, tempPassword){
         let saltRounds = theUserToReset[0].salt;
-        console.log("saltrounds = " + saltRounds);
-        console.log("tempPassword = " + tempPassword);
         //create hash with bcrypt then store to user
         
              //hash password to be stored
@@ -105,13 +103,11 @@ export default class User extends Entity {
         //set variables to be checked
         let userInDB = theUserToDisable.Disabled;
         let disableUpdate = false
-        console.log("before if statement = "+userInDB);
 
         //this can be used as a toggle to reactivate
         if(userInDB === true){
             //set disable to false/store/save to database
             disableUpdate = false;
-            console.log("after if true statement = "+disableUpdate);
             theUserToDisable.Disabled = disableUpdate;
             let updatedUserDoc = await theUserToDisable.save();
             return updatedUserDoc;
@@ -120,7 +116,6 @@ export default class User extends Entity {
         if(userInDB === false){
             //set disable to true/store/save to database
             disableUpdate = true;
-            console.log("after if false statement = "+disableUpdate);
             theUserToDisable.Disabled = disableUpdate;
             let updatedUserDoc = await theUserToDisable.save();
             return updatedUserDoc;
@@ -138,7 +133,7 @@ export default class User extends Entity {
         //generate hash to be stored
         let userHashPassword = await bcrypt.hash(newUserPasswordToStore, salt)  
         //return both values to be added to new user create json 
-        return {userHashPassword, salt};  
+        return {encryptedString: userHashPassword, salt: salt};  
     }
 
 }

@@ -31,7 +31,7 @@ export default class Provider extends Entity {
         try{
 
         //get info
-        let providerId = '';
+        let providerId = "";
         let servicesOfferedId = "";
 
         providerId = providerInfo.id;
@@ -90,7 +90,5 @@ export default class Provider extends Entity {
         }
 
     }
-
-
 
 }
