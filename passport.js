@@ -11,15 +11,15 @@ const ExtractJWT = passportJWT.ExtractJwt;
 //first configure passport to use the local strategy for authentication (i.e the userId and password know to this system)
 
 passport.use(new LocalStrategy({
-    usernameField: "_id",
+    usernameField: "UserId",
     passwordField: "UserPassword"
 },
 // in addition to providning the above JSON object telling which fields are for authentication,
 //you must provide a function that will actually handle the authentication process.
-async function(_id, UserPassword, callback){
+async function(UserId, UserPassword, callback){
     //actually check the Pesron's password and username
     try{                                    //first value is name of field second value is being passed in(Parameter)
-        let theUserDocs = await User.read({_id: _id});
+        let theUserDocs = await User.read({UserId: UserId});
         let theUserDoc = theUserDocs[0];
         let authresult = await User.authenticate(theUserDoc, UserPassword);
         //authresult will be true or false: true if username and password if good false otherwise

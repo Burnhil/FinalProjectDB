@@ -31,7 +31,7 @@ const setup = async() =>{
 
         let firstAdmin = await User.create(adminUser);
         //console.log(firstAdmin);
-        console.log(`The Admin account has been created with the following (_id: ${firstAdmin._id}) and the following (password = ${adminPassword})`);
+        console.log(`The Admin account has been created with the following (UserId: ${firstAdmin.UserId}) and the following (password = ${adminPassword})`);
     }catch(err){
         console.log(err);
     }

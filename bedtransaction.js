@@ -23,6 +23,7 @@ export default class BedTransaction extends Entity {
         //set current date/time to variable to store as reference
         let currentDate = Date();
         //set up json object to pass into insertion into database
+
         let theProperties = {
 
             CurrentBedCount: ServiceOffered.AvaliableBeds,
@@ -32,6 +33,8 @@ export default class BedTransaction extends Entity {
             UpdatingServiceID: ServiceOffered._id,
             changedDateTime: currentDate
         }
+
+        //console.log({ message: "theProperties to update = ", theProperties});
 
         try {
             //update the bed count and store in database
@@ -46,6 +49,8 @@ export default class BedTransaction extends Entity {
                 newModel[key] = value;
             }
             // Now save the Mongoose model.
+
+            console.log({ message: "this is the newModel being created", newModel});
             return newModel.save();
         } catch (err) {
             console.log(err);

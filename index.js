@@ -368,16 +368,16 @@ app.post("/users/authenticate", async(req, res) =>{
         }else{
     
             //test if user account is disabled pull user info to check Disabled true/false
-            let userInfoToCheckDisable = await User.read({ _id: req.body._id }); 
+            let userInfoToCheckDisable = await User.read({ UserId: req.body.UserId }); 
             let userDisabled = userInfoToCheckDisable[0];
-            //console.log(userDisabled.Disabled);
+            //console.log(userDisabled);
 
             //if user account Disabled = true send following message if Disabled = false continue with authorization
             if(userDisabled.Disabled){
                 res.send({ message: "This account has been disabled contact your Admin for more information."});
             }else{
 
-                if(req.body._id && req.body.UserPassword) {
+                if(req.body.UserId && req.body.UserPassword) {
                     //make Passport preform the authentication
                     //note since we are using JWT for authentication, we WILL NOT use serer-side sessions, so {session: false}
                     passport.authenticate("local", { session: false }, (err, user, info) => {
@@ -836,12 +836,12 @@ app.delete("/servicesoffered/:servicesofferedId", 	passport.authenticate("jwt", 
 ////%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%bedtransaction code%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 //Make endpoint that will create bedtransaction
-app.post("/bedtransaction",	passport.authenticate("jwt", { session: false}), async(req, res) => {
+app.post("/bedtransactions", passport.authenticate("jwt", { session: false}), async(req, res) => {
 
     try{ 
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
-    	if(req.user.UserType === "Admin"){
+    	if(req.user.UserType === "Provider"){
 
             if( req.body.UpdatedBedCount
                 && req.body.UpdatingUserID
@@ -862,15 +862,11 @@ app.post("/bedtransaction",	passport.authenticate("jwt", { session: false}), asy
                     let servicesOfferedDoc = await ServicesOffered.read({ _id: theServicesOffered});
             
                     let theUserDoc = userDoc[0];
-                    console.log(userDoc[0]);
-                    console.log(providerDoc[0]);
-                    console.log(servicesOfferedDoc[0]);
                     //now we create BedTransaction doc and store in database
-                    let newBedTransaction = await ServicesOffered.create(theUserDoc, providerDoc[0], servicesOfferedDoc[0], req.body.UpdatedBedCount);
-                    //res.send({message: "BedTransaction created successfully", newBedTransaction});
+                    let newBedTransaction = await BedTransaction.updateBedCountTable(theUserDoc, providerDoc[0], servicesOfferedDoc[0], req.body.UpdatedBedCount);
+                    res.send({message: "BedTransaction created successfully", newBedTransaction});
 
-                };
-
+                }
         }else{
             res.send({message: "Unauthorized access please contact your Admin!"});
         };    
@@ -882,7 +878,7 @@ app.post("/bedtransaction",	passport.authenticate("jwt", { session: false}), asy
 });
 
 //Make endpoint that returns all bedtransaction
-app.get("/bedtransaction", 	passport.authenticate("jwt", { session: false}), async(req, res) =>{
+app.get("/bedtransactions", passport.authenticate("jwt", { session: false}), async(req, res) =>{
 
     try{
 
