@@ -11,7 +11,7 @@ export default class BedTransaction extends Entity {
         UpdatingUserID: { type: "String", required: true},
         UpdatingProviderID: { type: "String", required: true},
         UpdatingServiceID: { type: "String", required: true},
-        changedDateTime: { type: "Date", default: new Date() }
+        ChangedDateTime: { type: "Date", default: new Date() }
     
     });
 
@@ -31,7 +31,7 @@ export default class BedTransaction extends Entity {
             UpdatingUserID: User._id,
             UpdatingProviderID: Provider._id,
             UpdatingServiceID: ServiceOffered._id,
-            changedDateTime: currentDate
+            ChangedDateTime: currentDate
         }
 
         //console.log({ message: "theProperties to update = ", theProperties});

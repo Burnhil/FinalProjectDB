@@ -16,11 +16,11 @@ export default class User extends Entity {
         UserType: { type: "String", required: true},
         UserId: { type: "String", required: true},
         UserPassword: { type: "String", required: true},
-        salt: {type: "String"},
+        Salt: {type: "String"},
         LastLogin: { type: Date, required: true},
         Disabled: { type: Boolean, required: true},
-        changedBy: { type: "String", default: "The Admin" },
-        changedDateTime: { type: "Date", default: new Date() },
+        ChangedBy: { type: "String", default: "The Admin" },
+        ChangedDateTime: { type: "Date", default: new Date() },
         ProviderID: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider"}]
     
     });
@@ -85,7 +85,7 @@ export default class User extends Entity {
 
     //code to reset password using a temp password by admin/input using userid(theUserToReset) and to password(tempPassword)
     static async resetPassword(theUserToReset, tempPassword){
-        let saltRounds = theUserToReset[0].salt;
+        let saltRounds = theUserToReset[0].Salt;
         //create hash with bcrypt then store to user
         
              //hash password to be stored
@@ -129,11 +129,11 @@ export default class User extends Entity {
     static async newUserPasswordHash(newUserPasswordToStore){
         //generate salt for user
         const saltRounds = 10;
-        let salt = await bcrypt.genSalt(saltRounds);
+        let Salt = await bcrypt.genSalt(saltRounds);
         //generate hash to be stored
-        let userHashPassword = await bcrypt.hash(newUserPasswordToStore, salt)  
+        let userHashPassword = await bcrypt.hash(newUserPasswordToStore, Salt)  
         //return both values to be added to new user create json 
-        return {encryptedString: userHashPassword, salt: salt};  
+        return {encryptedString: userHashPassword, Salt: Salt};  
     }
 
 }

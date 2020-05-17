@@ -114,7 +114,7 @@ app.post("/users", passport.authenticate("jwt", { session: false}), async(req, r
                     //get encrypted password and salt
                     let encryptedPasswordAndSalt = await User.newUserPasswordHash(req.body.UserPassword);
                     let encryptedPassword = encryptedPasswordAndSalt.encryptedString;
-                    let salt = encryptedPasswordAndSalt.salt;
+                    let Salt = encryptedPasswordAndSalt.Salt;
 
                     let newUserInfo = {
                         FirstName: req.body.FirstName,
@@ -125,7 +125,7 @@ app.post("/users", passport.authenticate("jwt", { session: false}), async(req, r
                         UserType: req.body.UserType,
                         UserId: req.body.UserId,
                         UserPassword: encryptedPassword,
-                        salt: salt,
+                        Salt: Salt,
                         LastLogin: todayDate,  //this date represents initial creation at this point
                         Disabled: false
                     }
@@ -183,9 +183,9 @@ app.put("/users/:userId", passport.authenticate("jwt", { session: false}), async
                 if(req.body.UserType){
                     updateInfo["UserType"] = req.body.UserType;
                 }
-                //add changedBy and changedDateTime to updateInfo
-                updateInfo["changedBy"] = "Admin" //*************update to user who is authenticate */
-                updateInfo["changedDateTime"] = Date();
+                //add ChangedBy and ChangedDateTime to updateInfo
+                updateInfo["ChangedBy"] = req.user._id;
+                updateInfo["ChangedDateTime"] = Date();
 
                 //update database for user
                 let updatedUserDoc = await User.update(userDoc, updateInfo);
@@ -376,8 +376,15 @@ app.post("/users/authenticate", async(req, res) =>{
             if(userDisabled.Disabled){
                 res.send({ message: "This account has been disabled contact your Admin for more information."});
             }else{
+ 
+
 
                 if(req.body.UserId && req.body.UserPassword) {
+
+                //changed the LastLogin time for user during authentication
+                let dateUpdate ={ LastLogin: Date()}
+                let userLoginDateTime = await User.update(userInfoToCheckDisable[0],dateUpdate);
+
                     //make Passport preform the authentication
                     //note since we are using JWT for authentication, we WILL NOT use serer-side sessions, so {session: false}
                     passport.authenticate("local", { session: false }, (err, user, info) => {
@@ -388,7 +395,7 @@ app.post("/users/authenticate", async(req, res) =>{
                                 user: user
                             });
                         }
-                        //assuming no issues, go ahead and "login" the pesron via Passport
+                        //assuming no issues, go ahead and "login" the person via Passport
                         req.login(user, {session: false}, (err) => {
                             if(err){
                                 res.send(err);
@@ -495,7 +502,7 @@ app.put("/providers/:providerId", passport.authenticate("jwt", { session: false}
     try{
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
-        if(req.user.UserType === "Provider"){
+        if(req.user.UserType === "Provider" || req.user.UserType === "Admin"){
             //get the id to use
             let id = req.params.providerId;
             //now find the user doc
@@ -530,9 +537,9 @@ app.put("/providers/:providerId", passport.authenticate("jwt", { session: false}
                 if(req.body.County){
                     updateInfo["County"] = req.body.County;
                 }
-                //add changedBy and changedDateTime to updateInfo
-                updateInfo["changedBy"] = "Admin" //*************update to user who is authenticate */
-                updateInfo["changedDateTime"] = Date();
+                //add ChangedBy and ChangedDateTime to updateInfo
+                updateInfo["ChangedBy"] = req.user._id;
+                updateInfo["ChangedDateTime"] = Date();
 
                 //update database for user
                 let updatedProviderDoc = await Provider.update(providerDoc, updateInfo);
@@ -742,7 +749,7 @@ app.put("/servicesoffered/:servicesofferedId", 	passport.authenticate("jwt", { s
     try{
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
-    	if(req.user.UserType === "Provider"){
+    	if(req.user.UserType === "Provider" || req.user.UserType === "Admin"){
 
             //get the id to use
             let id = req.params.servicesofferedId;
@@ -778,9 +785,9 @@ app.put("/servicesoffered/:servicesofferedId", 	passport.authenticate("jwt", { s
                 if(req.body.WarmingStation){
                     updateInfo["WarmingStation"] = req.body.WarmingStation;
                 }
-                //add changedBy and changedDateTime to updateInfo
-                updateInfo["changedBy"] = "Admin" //*************update to user who is authenticate */
-                updateInfo["changedDateTime"] = Date();
+                //add ChangedBy and ChangedDateTime to updateInfo
+                updateInfo["ChangedBy"] = req.user._id;
+                updateInfo["ChangedDateTime"] = Date();
 
                 //update database for user
                 let updatedServicesOfferedDoc = await ServicesOffered.update(servicesOfferedDoc, updateInfo);

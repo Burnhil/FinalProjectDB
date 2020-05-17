@@ -14,8 +14,8 @@ export default class Provider extends Entity {
         City: { type: "String", required: true},
         State: { type: "String", required: true},
         County: { type: "String", required: true},
-        changedBy: { type: "String", default: "The Admin" },
-        changedDateTime: { type: "Date", default: new Date() },
+        ChangedBy: { type: "String", default: "The Admin" },
+        ChangedDateTime: { type: "Date", default: new Date() },
         TheUserId: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
         TheServicesOfferedId: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
     
