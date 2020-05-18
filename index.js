@@ -92,7 +92,7 @@ app.post("/users", passport.authenticate("jwt", { session: false}), async(req, r
         let todayDate = Date();
 
             //set minimum requirements for password for length and characters used
-            let regex = "[*@!#%&,a-z,A-Z.1-9]{8,16}";
+            let regex = "[*@!#%&,a-z,A-Z,1-9]{8,16}";
             let pattern =  new RegExp(regex);
             let testPattern = await pattern.test(req.body.UserPassword);
             //if inputed password does not meet requirements let user know
@@ -286,7 +286,7 @@ app.put("/users/resetpassword/:userId", passport.authenticate("jwt", { session: 
             let tempPassword = req.body.UserPassword;
 
             //set minimum requirements for password for length and characters used
-            let regex = "[*@!#%&,a-z,A-Z.1-9]{8,16}";
+            let regex = "[*@!#%&,a-z,A-Z,1-9]{8,16}";
             let pattern =  new RegExp(regex);
             let testPattern = await pattern.test(tempPassword);
             //if inputed password does not meet requirements let user know
@@ -358,7 +358,7 @@ app.post("/users/authenticate", async(req, res) =>{
     try {
 
         //set minimum requirements for password for length and characters used
-        let regex = "[*@!#%&,a-z,A-Z.1-9]{8,16}";
+        let regex = "[*@!#%&,a-z,A-Z,1-9]{8,16}";
         let pattern =  new RegExp(regex);
         let testPattern = await pattern.test(req.body.UserPassword);
         //if inputed password does not meet requirements let user know
