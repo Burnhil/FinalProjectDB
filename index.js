@@ -21,12 +21,18 @@ import JWT from 'jsonwebtoken';
 import express from 'express';
 import bodyParser from 'body-parser';
 
+//brint in cors for browser to browser support
+import cors from 'cors';
+
 const app = express(); // the actual web server
 const port = 3000;
 
 // Now apply (or use) the bodyParser middleware in Express
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));   // this allows us to work with x-www-url-encoded data (used primarily in JSON Web Token authentication processes)
+
+//*****add cores here ************************************/
+app.use(cors());
 
 // Make Express now listen for HTTP traffic
 app.listen(port, () => {
@@ -396,13 +402,29 @@ app.post("/users/authenticate", async(req, res) =>{
                             });
                         }
                         //assuming no issues, go ahead and "login" the person via Passport
+                        console.log(user);
                         req.login(user, {session: false}, (err) => {
                             if(err){
                                 res.send(err);
                             }
+                            //***************** */
+                            //create authUser json to be passed to front end after verification.  This data can be restricted
+                            let authUser = {
+                                _Id: user._id,
+                                UserId: user.userId,
+                                UserType: user.UserType,
+                                FirstName: user.FirstName,
+                                LastName: user.LastName,
+                                Organization: user.Organization,
+                                PhoneNumber: user.PhoneNumber,
+                                Email: user.Email,
+                                LastLogin: user.LastLogin,
+                                Disabled: user.Disabled,
+                            }
+                            console.log(`authUser = ${authUser}`);
                             // if no error, generate the JWT to signify that the person logged in successfully
-                            const token = JWT.sign(user.toJSON(), "ThisNeedsToBeAStrongPasswordPleaseChange")
-                            return res.json({ user, token });
+                            const token = JWT.sign(authUser, "ThisNeedsToBeAStrongPasswordPleaseChangeForFinalProduction")
+                            return res.json({ authUser, token });
                         });
                     })(req, res);   //NOTE: we're passing req and res to the next middleware (just memorize this)
                 }

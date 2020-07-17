@@ -26,6 +26,17 @@ async function(UserId, UserPassword, callback){
         if(authresult){
             //login's good
             //call the next middlewear callback adn pass it the object representing the logged in Person
+
+            let authUser = {
+                FirstName: theUserDoc.FirstName,
+                LastName: theUserDoc.LastName,
+                Organization: theUserDoc.Organization,
+                UserType: theUserDoc.UserType,
+            };
+
+            console.log(authUser);
+
+
             return callback(null, theUserDoc, { message: "The User logged in successfully."});
         }else{
             //login attemp failed
