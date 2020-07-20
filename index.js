@@ -421,7 +421,7 @@ app.post("/users/authenticate", async(req, res) =>{
                                 LastLogin: user.LastLogin,
                                 Disabled: user.Disabled,
                             }
-                            console.log(`authUser = ${authUser}`);
+                           
                             // if no error, generate the JWT to signify that the person logged in successfully
                             const token = JWT.sign(authUser, "ThisNeedsToBeAStrongPasswordPleaseChangeForFinalProduction")
                             return res.json({ authUser, token });
