@@ -43,7 +43,7 @@ app.listen(port, () => {
 
 //Make endpoint that returns all users
 app.get("/users", passport.authenticate("jwt", { session: false}) ,async(req, res) =>{
-
+    console.log(req.user.UserType);
     try{
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
@@ -256,6 +256,7 @@ app.put("/users/link/:userId", passport.authenticate("jwt", { session: false}), 
             let userId = req.params.userId;
             //get providerId from JSON
             let providerId = req.body._id;
+            console.log(providerId);
 
             //read user and provider from database
             let userDoc = await User.read({ _id: userId });
@@ -411,7 +412,7 @@ app.post("/users/authenticate", async(req, res) =>{
                             //create authUser json to be passed to front end after verification.  This data can be restricted
                             let authUser = {
                                 _Id: user._id,
-                                UserId: user.userId,
+                                UserId: user.UserId,
                                 UserType: user.UserType,
                                 FirstName: user.FirstName,
                                 LastName: user.LastName,
@@ -475,13 +476,14 @@ app.get("/providers/:providerId", async(req, res) =>{
 //make endpoint to create a provider doc
 app.post("/providers", passport.authenticate("jwt", { session: false}), async(req, res) => {
 
+    
     try{ 
         //check to see if Provider info came through POST
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
         if(req.user.UserType === "Admin"){
 
-
+            
             if( req.body.OrganizationName
                 && req.body.Email
                 && req.body.WebsiteInfo
@@ -502,10 +504,10 @@ app.post("/providers", passport.authenticate("jwt", { session: false}), async(re
                         County: req.body.County,
                     }
 
+
                     //now we create Provider doc and store in database
                     let newProvider = await Provider.create(newProviderInfo);
                     res.send({message: "Provider created successfully", newProvider});
-
                 };
 
             }else{
@@ -527,12 +529,14 @@ app.put("/providers/:providerId", passport.authenticate("jwt", { session: false}
         if(req.user.UserType === "Provider" || req.user.UserType === "Admin"){
             //get the id to use
             let id = req.params.providerId;
+           
             //now find the user doc
             let providerDocs = await Provider.read({ _id: id });
             let providerDoc = providerDocs[0];
+            
 
             if(providerDoc){
-
+           
                 //look at the Post req.body for the data used to update this provider document
                 let updateInfo = {};
                 if(req.body.OrganizationName){
@@ -656,7 +660,7 @@ app.put("/providers/linkservices/:providerId", passport.authenticate("jwt", { se
     try{
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
-	    if(req.user.UserType === "Admin"){
+	    if(req.user.UserType === "Admin" || req.user.UserType === "Admin"){
 
             //get providerId from url
             let providerId = req.params.providerId;
@@ -695,7 +699,7 @@ app.post("/servicesoffered", passport.authenticate("jwt", { session: false}), as
     try{ 
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
-    	if(req.user.UserType === "Provider"){
+    	if(req.user.UserType === "Provider" || req.user.UserType === "Admin"){
 
                 //check to see if Servicesoffered info came through POST
             if( req.body.AvaliableBeds
@@ -929,19 +933,19 @@ app.get("/bedtransactions", passport.authenticate("jwt", { session: false}), asy
     }
 })
 
-//Make endpoint that returns bedtransactions by id
-app.get("/bedtransactions/:bedtransactionId", passport.authenticate("jwt", { session: false}), async(req, res) =>{
+//Make endpoint that returns bedtransactions by providerid
+app.get("/bedtransactions/:providerid", passport.authenticate("jwt", { session: false}), async(req, res) =>{
 
     try{
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
     	if(req.user.UserType === "Admin"){
 
-            let id = req.params.bedtransactionId;
+            let id = req.params.providerid;
             //call function to read user database info
-            let servicesBedtransactionIdDocs = await BedTransaction.read({ _id: id});
-            let servicesBedtransactionIdDoc = servicesBedtransactionIdDocs[0];
-            res.send(servicesBedtransactionIdDoc);
+            let servicesBedtransactionIdDocs = await BedTransaction.read({ UpdatingProviderID: id});
+            //let servicesBedtransactionIdDoc = servicesBedtransactionIdDocs[0];
+            res.send(servicesBedtransactionIdDocs);
 
         }else{
             res.send({message: "Unauthorized access please contact your Admin!"});
@@ -981,19 +985,19 @@ app.get("/providerusers", passport.authenticate("jwt", { session: false}), async
     }
 })
 
-//Make endpoint that returns providerusers by id
-app.get("/providerusers/:provideruserId", passport.authenticate("jwt", { session: false}), async(req, res) =>{
+//Make endpoint that returns providersusers showing provider with all its users
+app.get("/providerusers/:providerId", passport.authenticate("jwt", { session: false}), async(req, res) =>{
 
     try{
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
         if(req.user.UserType === "Admin"){
 
-            let id = req.params.provideruserId;
+            let id = req.params.providerId;
             //call function to read provideruser database info
-            let provideruserIdDocs = await ProviderUser.read({ _id: id});
-            let provideruserIdDoc = provideruserIdDocs[0];
-            res.send(provideruserIdDoc);
+            let provideruserIdDocs = await ProviderUser.read({ ProviderId: id});
+            //let provideruserIdDoc = provideruserIdDocs[0];
+            res.send(provideruserIdDocs);
 
         }else{
             res.send({message: "Unauthorized access please contact your Admin!"});

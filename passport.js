@@ -43,7 +43,7 @@ async function(UserId, UserPassword, callback){
 // now config passport to verify any generated JWTs
 passport.use(new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
-    secretOrKey: 'ThisNeedsToBeAStrongPasswordPleaseChange',  // I recommend taht ou use a key insted of a password.
+    secretOrKey: 'ThisNeedsToBeAStrongPasswordPleaseChangeForFinalProduction',  // this needs to be changed
 },
     //provide a function that will verify any JWT
 function (JWT, callback){
