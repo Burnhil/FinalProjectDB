@@ -14,10 +14,10 @@ passport.use(new LocalStrategy({
     usernameField: "UserId",
     passwordField: "UserPassword"
 },
-// in addition to providning the above JSON object telling which fields are for authentication,
+// in addition to providing the above JSON object telling which fields are for authentication,
 //you must provide a function that will actually handle the authentication process.
 async function(UserId, UserPassword, callback){
-    //actually check the Pesron's password and username
+    //actually check the Person's password and username
     try{                                    //first value is name of field second value is being passed in(Parameter)
         let theUserDocs = await User.read({UserId: UserId});
         let theUserDoc = theUserDocs[0];
@@ -40,7 +40,7 @@ async function(UserId, UserPassword, callback){
 }
 ));
 
-// now config passport to verify any generated JWTs
+// now configure passport to verify any generated JWTs
 passport.use(new JWTStrategy({
     jwtFromRequest: ExtractJWT.fromAuthHeaderAsBearerToken(),
     secretOrKey: 'ThisNeedsToBeAStrongPasswordPleaseChangeForFinalProduction',  // this needs to be changed
@@ -48,7 +48,6 @@ passport.use(new JWTStrategy({
     //provide a function that will verify any JWT
 function (JWT, callback){
     //do any additional checking here in this function if needed
-    // in this casen no other checks are being performed, but you might eant to consider other possible checks.
     return callback(null, JWT);
 }
 ));

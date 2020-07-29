@@ -30,7 +30,7 @@ export default class Provider extends Entity {
     
         try{
 
-        //get info
+        //get info from user
         let providerId = "";
         let servicesOfferedId = "";
 
@@ -59,7 +59,7 @@ export default class Provider extends Entity {
 
     //link provider to user 
     static async linkProviderUser(theProviderInfo, theUserInfo){
-        //get info
+        //get info from user
         let userIds = [];
         let providerId = "";
         

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { truncate } from "fs";
 
+//create the database connection to be used
 class DBConnection {
     constructor() {
         const mongoDBUrl = "localhost";

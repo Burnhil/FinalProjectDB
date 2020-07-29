@@ -9,7 +9,7 @@ const setup = async() =>{
     //system date to be stored
     let today = Date();
 
-    //fist user info to be stored
+    //first user info to be stored
     let adminUser = {
         FirstName: 'Admin',
         LastName: 'User',

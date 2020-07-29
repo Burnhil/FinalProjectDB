@@ -5,7 +5,7 @@ import ProviderOrganization from "./provideruser.js";
 import bcrypt from "bcrypt";
 
 export default class User extends Entity {
-    // define 2 static properties pertaining to the schema and model of this entity type.
+    // define static properties pertaining to the schema and model of this entity type.
     static schema = new mongoose.Schema({
 
         FirstName: { type: "String", required: true},
@@ -34,7 +34,7 @@ export default class User extends Entity {
         try{
             
 
-        //get info
+        //get info from user 
         let providerIds = [];
         let userId = "";
 
@@ -44,13 +44,13 @@ export default class User extends Entity {
         userId = theUserInfo._id;
     
 
-        //add
+        //add user to provider
         theUserInfo.ProviderID = providerIds;
         for(let i =0; i < providerIds.length; i++){
             theProviderInfo[i].TheUserId.push(userId);
         }
 
-        //save
+        //save the updated doc to database
         let updatedUserProviderDoc = await theUserInfo.save();
         let updatedProviderDoc = [];
         for(let i = 0; i < providerIds.length; i++){

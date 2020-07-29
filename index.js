@@ -293,7 +293,7 @@ app.put("/users/resetpassword/:userId", passport.authenticate("jwt", { session: 
             let tempPassword = req.body.UserPassword;
 
             //set minimum requirements for password for length and characters used
-            let regex = "[*@!#%&,a-z,A-Z,1-9]{8,16}";
+            let regex = "[*@!#%&,a-z,A-Z,0-9]{8,16}";
             let pattern =  new RegExp(regex);
             let testPattern = await pattern.test(tempPassword);
             //if inputed password does not meet requirements let user know
@@ -316,7 +316,7 @@ app.put("/users/resetpassword/:userId", passport.authenticate("jwt", { session: 
         }else{
             res.send({message: "Unauthorized access please contact your Admin!"});
         };
-
+        return res;
     }catch(err){
         console.log(err);
         res.send(err);
@@ -660,7 +660,7 @@ app.put("/providers/linkservices/:providerId", passport.authenticate("jwt", { se
     try{
 
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
-	    if(req.user.UserType === "Admin" || req.user.UserType === "Admin"){
+	    if(req.user.UserType === "Admin" || req.user.UserType === "Provider"){
 
             //get providerId from url
             let providerId = req.params.providerId;
@@ -871,10 +871,12 @@ app.delete("/servicesoffered/:servicesofferedId", 	passport.authenticate("jwt", 
 //Make endpoint that will create bedtransaction
 app.post("/bedtransactions", passport.authenticate("jwt", { session: false}), async(req, res) => {
 
-    try{ 
 
+    try{ 
+        
+        console.log(`bed= ${req.body.UpdatedBedCount} User= ${req.body.UpdatingUserID} Provider= ${req.body.UpdatingProviderID} Service= ${req.body.UpdatingServiceID}`);
         //Using if statement to determine if authenticated user as access if not return "Unauthroized access please conatct your Admin!"
-    	if(req.user.UserType === "Provider"){
+    	if(req.user.UserType === "Provider" || req.user.UserType === "Admin"){
 
             if( req.body.UpdatedBedCount
                 && req.body.UpdatingUserID
@@ -897,6 +899,7 @@ app.post("/bedtransactions", passport.authenticate("jwt", { session: false}), as
                     let theUserDoc = userDoc[0];
                     //now we create BedTransaction doc and store in database
                     let newBedTransaction = await BedTransaction.updateBedCountTable(theUserDoc, providerDoc[0], servicesOfferedDoc[0], req.body.UpdatedBedCount);
+                    console.log(`This is a bed transaction = ${newBedTransaction}`)
                     res.send({message: "BedTransaction created successfully", newBedTransaction});
 
                 }
