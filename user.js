@@ -5,22 +5,22 @@ import ProviderOrganization from "./provideruser.js";
 import bcrypt from "bcrypt";
 
 export default class User extends Entity {
-    // define 2 static properties pertaining to the schema and model of this entity type.
+    // define static properties pertaining to the schema and model of this entity type.
     static schema = new mongoose.Schema({
 
         FirstName: { type: "String", required: true},
         LastName: { type: "String", required: true},
-        Oraganization: { type: "String", required: true},
+        Organization: { type: "String", required: true},
         PhoneNumber: { type: "String", required: true},
         Email: { type: "String", required: true},
         UserType: { type: "String", required: true},
         UserId: { type: "String", required: true},
         UserPassword: { type: "String", required: true},
-        salt: {type: "String"},
+        Salt: {type: "String"},
         LastLogin: { type: Date, required: true},
         Disabled: { type: Boolean, required: true},
-        changedBy: { type: "String", default: "The Admin" },
-        changedDateTime: { type: "Date", default: new Date() },
+        ChangedBy: { type: "String", default: "The Admin" },
+        ChangedDateTime: { type: "Date", default: new Date() },
         ProviderID: [{ type: mongoose.Schema.Types.ObjectId, ref: "Provider"}]
     
     });
@@ -34,7 +34,7 @@ export default class User extends Entity {
         try{
             
 
-        //get info
+        //get info from user 
         let providerIds = [];
         let userId = "";
 
@@ -44,13 +44,13 @@ export default class User extends Entity {
         userId = theUserInfo._id;
     
 
-        //add
+        //add user to provider
         theUserInfo.ProviderID = providerIds;
         for(let i =0; i < providerIds.length; i++){
             theProviderInfo[i].TheUserId.push(userId);
         }
 
-        //save
+        //save the updated doc to database
         let updatedUserProviderDoc = await theUserInfo.save();
         let updatedProviderDoc = [];
         for(let i = 0; i < providerIds.length; i++){
@@ -64,7 +64,7 @@ export default class User extends Entity {
             for(let i =0; i < theProviderInfo.length; i++){
                 console.log(`providers ${updatedProviderDoc[i].id}`);
             }
-
+        
         } 
     }catch(err){
             console.log(err);
@@ -85,9 +85,7 @@ export default class User extends Entity {
 
     //code to reset password using a temp password by admin/input using userid(theUserToReset) and to password(tempPassword)
     static async resetPassword(theUserToReset, tempPassword){
-        let saltRounds = theUserToReset[0].salt;
-        console.log("saltrounds = " + saltRounds);
-        console.log("tempPassword = " + tempPassword);
+        let saltRounds = theUserToReset[0].Salt;
         //create hash with bcrypt then store to user
         
              //hash password to be stored
@@ -105,13 +103,11 @@ export default class User extends Entity {
         //set variables to be checked
         let userInDB = theUserToDisable.Disabled;
         let disableUpdate = false
-        console.log("before if statement = "+userInDB);
 
         //this can be used as a toggle to reactivate
         if(userInDB === true){
             //set disable to false/store/save to database
             disableUpdate = false;
-            console.log("after if true statement = "+disableUpdate);
             theUserToDisable.Disabled = disableUpdate;
             let updatedUserDoc = await theUserToDisable.save();
             return updatedUserDoc;
@@ -120,7 +116,6 @@ export default class User extends Entity {
         if(userInDB === false){
             //set disable to true/store/save to database
             disableUpdate = true;
-            console.log("after if false statement = "+disableUpdate);
             theUserToDisable.Disabled = disableUpdate;
             let updatedUserDoc = await theUserToDisable.save();
             return updatedUserDoc;
@@ -134,11 +129,11 @@ export default class User extends Entity {
     static async newUserPasswordHash(newUserPasswordToStore){
         //generate salt for user
         const saltRounds = 10;
-        let salt = await bcrypt.genSalt(saltRounds);
+        let Salt = await bcrypt.genSalt(saltRounds);
         //generate hash to be stored
-        let userHashPassword = await bcrypt.hash(newUserPasswordToStore, salt)  
+        let userHashPassword = await bcrypt.hash(newUserPasswordToStore, Salt)  
         //return both values to be added to new user create json 
-        return {userHashPassword, salt};  
+        return {encryptedString: userHashPassword, Salt: Salt};  
     }
 
 }

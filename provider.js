@@ -14,8 +14,8 @@ export default class Provider extends Entity {
         City: { type: "String", required: true},
         State: { type: "String", required: true},
         County: { type: "String", required: true},
-        changedBy: { type: "String", default: "The Admin" },
-        changedDateTime: { type: "Date", default: new Date() },
+        ChangedBy: { type: "String", default: "The Admin" },
+        ChangedDateTime: { type: "Date", default: new Date() },
         TheUserId: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
         TheServicesOfferedId: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
     
@@ -30,8 +30,8 @@ export default class Provider extends Entity {
     
         try{
 
-        //get info
-        let providerId = '';
+        //get info from user
+        let providerId = "";
         let servicesOfferedId = "";
 
         providerId = providerInfo.id;
@@ -59,7 +59,7 @@ export default class Provider extends Entity {
 
     //link provider to user 
     static async linkProviderUser(theProviderInfo, theUserInfo){
-        //get info
+        //get info from user
         let userIds = [];
         let providerId = "";
         
@@ -90,7 +90,5 @@ export default class Provider extends Entity {
         }
 
     }
-
-
 
 }

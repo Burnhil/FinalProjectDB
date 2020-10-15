@@ -5,7 +5,7 @@ export default class Entity {
     static async create(theProperties) {
         // Assume that theProperties parameter is a JSON object containing the properties to use in creating a document
         try {
-            // instantiate a new model of whatever the child class is representing
+            // instantiate a new model of what ever the child class is representing
             let newModel = new this.model();
             // Get all of the properties in theProperties parameter and assign them to the new model object.
             for(let [key, value] of Object.entries(theProperties)) {
